@@ -7,10 +7,9 @@ from   neuron           import h
 import MSN_builder          as build
 import pickle
 import matplotlib.pyplot    as plt
-from common_functions import *
+import numpy as np
 # Load model mechanisms
 import neuron               as nrn
-import numpy as np
 nrn.load_mechanisms('mechanisms/single')
 
 h.load_file('stdlib.hoc')
@@ -68,28 +67,26 @@ for cell_index in model_iterator:
 
     vml = [h.Vector(1e3) for x in cell.dendlist]
     totalCount = 0
-    syn_locs = np.array(range(1,9,2))/10 # array([0.1, 0.3, 0.5, 0.7])
-    ns      = {}
-    nc      = {}
-    Syn     = {}
-    gbase = 0.3e-3
-    delay = 0
-    fglut=12.0
+    synapse_locations = np.array(range(1,9,2))/10 # array([0.1, 0.3, 0.5, 0.7])
     for v,c in zip(vml,cell.dendlist):
+
+        # add random synapses along a distal dendrite
+        # create a glut synapse (glutamate)
+        # if totalCount in [21,35,44, 45]:
+        #     ns = {}
+        #     nc = {}
+        #     Sync = {}
+        #     for loc in synapse_locations:
+        #         random_synapse(ns, nc, Syn, c, loc,           \
+        #                                 NS_interval=1000.0/fglut,    \
+        #                                 NC_conductance=gbase,       \
+        #                                 NS_start=delay,             \
+        #                                 seed=None )
+
         # tm[i].record(h._ref_t)
-        for totalCount in [21, 33, 35, 43, 44]:
-            for loc in syn_locs:
-
-                # create a glut synapse (glutamate)
-                random_synapse(ns, nc, Syn, c, loc,           \
-                                        NS_interval=1000.0/fglut,    \
-                                        NC_conductance=gbase,       \
-                                        NS_start=delay,             \
-                                        seed=None )
-
-            print(c.name())
-            v.record(c(0.5)._ref_v)
-            totalCount += 1
+        print(c.name())
+        v.record(c(0.5)._ref_v)
+        totalCount += 1
     # run simulation
     h.finitialize(-80)
 
