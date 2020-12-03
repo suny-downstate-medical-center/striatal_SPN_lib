@@ -16,6 +16,17 @@ nrn.load_mechanisms('mechanisms/single')
 h.load_file('stdlib.hoc')
 h.load_file('import3d.hoc')
 
+def getParentDendrites(sec, parentsecList):
+    if  h.SectionRef(sec=sec).parent and h.SectionRef(sec=sec).parent.name().find('soma') == -1 :
+        parentSec = h.SectionRef(sec=sec).parent
+        print (" parentSec " + str(parentSec.name()))
+        parentsecList.append([parentSec, parentSec.L])
+
+        return getParentDendrites(parentSec, parentsecList)
+
+    else:
+
+        return parentsecList
 # specs
 specs = {'dspn': {
                     'N': 71,
@@ -37,6 +48,7 @@ model_iterator    = range(5)  # range(specs[cell_type]['N']) gives all models
 # open library (channel distributions etc)
 with open(specs[cell_type]['lib'], 'rb') as f:
     model_sets = pickle.load(f, encoding="latin1")
+    print (" model_sets " + str(len(model_sets)))
 
 # simulate model(s)
 OUT = {}
@@ -59,16 +71,10 @@ for cell_index in model_iterator:
     # record vectors
     tm  = h.Vector()
     tm.record(h._ref_t)
-    # vm  = h.Vector()
-    # print([sec for sec in cell.dendlist])
-    # dend_43 = [sec for sec in cell.dendlist][43]
-    # vm.record(cell.soma(0.5)._ref_v)
-    # vm.record(dend_43(0.9)._ref_v)
-    # tml  = [h.Vector(1e3) for x in cell.dendlist]
 
     vml = [h.Vector(1e3) for x in cell.dendlist]
     totalCount = 0
-    syn_locs = np.array(range(1,9,2))/10 # array([0.1, 0.3, 0.5, 0.7])
+    syn_locs = np.array(range(1,9,4))/10 # array([0.1, 0.3, 0.5, 0.7])
     ns      = {}
     nc      = {}
     Syn     = {}
@@ -76,20 +82,22 @@ for cell_index in model_iterator:
     delay = 0
     fglut=12.0
     for v,c in zip(vml,cell.dendlist):
-        # tm[i].record(h._ref_t)
-        for totalCount in [21, 33, 35, 43, 44]:
-            for loc in syn_locs:
 
-                # create a glut synapse (glutamate)
+        parentDendrites = getParentDendrites(c, [])
+        print(" for section " + c.name() + " parents are " + str(parentDendrites) + " dist from soma = " + str(sum([x[1] for x in parentDendrites])))
+        # tm[i].record(h._ref_t)
+        if totalCount in [21,33]:
+            for loc in syn_locs:
+            # create a glut synapse (glutamate)
                 random_synapse(ns, nc, Syn, c, loc,           \
                                         NS_interval=1000.0/fglut,    \
                                         NC_conductance=gbase,       \
                                         NS_start=delay,             \
                                         seed=None )
 
-            print(c.name())
-            v.record(c(0.5)._ref_v)
-            totalCount += 1
+        print(c.name())
+        v.record(c(0.5)._ref_v)
+        totalCount += 1
     # run simulation
     h.finitialize(-80)
 
@@ -99,35 +107,10 @@ for cell_index in model_iterator:
 
     OUT[cell_index] = {}
 
-    # fig, axs = plt.subplots(totalCount)
-    #
-    # fig.suptitle('Dendritic recordings')
-
     plt.clf()
     for v,c in zip(vml,cell.dendlist):
         plt.clf()
         plt.plot(tm.to_python(), v.to_python())
         plt.savefig("output/cell_"+ str(cell_index) + "_dendrite_" + str(c.name()) )
 
-#         , label='mdl:{} rhb:{:.0f}'.format(cell_index,OUT[cell_index]['rheo'])
-#
-#         axs[count].plot(tm.to_python(), v.to_python()), label='mdl:{} rhb:{:.0f}'.format(cell_index,OUT[cell_index]['rheo'])
-#
-#         fig, axs = plt.subplots(2)
-# axs[0].plot(x, y)
-# axs[1].plot(x, -y)
-#         # tm[i].record(h._ref_t)
-#         v.record(c(0.5)._ref_v)
-#
-#         OUT[cell_index][c] = {'tm':tm.to_python(), 'vm':v.to_python, 'rheo':rheobase}
-#
-#
-#
-# # plot
-# for cell_index in OUT:
-#     for v,c in zip(vml,cell.dendlist):
-#
-#     plt.plot(OUT[cell_index]['tm'], OUT[cell_index]['vm'], \
-#         label='mdl:{} rhb:{:.0f}'.format(cell_index,OUT[cell_index]['rheo']))
 plt.legend()
-# plt.show()
