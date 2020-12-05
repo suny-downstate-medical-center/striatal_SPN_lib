@@ -2,11 +2,9 @@
 '''
 The MSN class defining the cell
 '''
-
 from neuron import h
 import numpy as np
 import json
-
 # Distributions:
 '''
 T-type Ca: g = 1.0/( 1 +np.exp{(x-70)/-4.5} )
@@ -67,7 +65,7 @@ class MSN:
         h.celsius = 35
         self._create_sectionlists()
         self._set_nsegs(section=section)
-        self.v_init = -80
+        self.v_init = -85
 
         self.dendritic_channels =   [
                     "naf",
@@ -101,7 +99,6 @@ class MSN:
                     "naf",
                     "kas" ,
                     "Im"       ]
-
 
         # insert active mechanisms (related to channels) -------------
         for sec in self.somalist:
@@ -202,7 +199,6 @@ class MSN:
             self.distribute_channels("dend", "pbar_cav32", 1, 0, 1.0, 120.0, -30.0, 1e-7)
             self.distribute_channels("dend", "pbar_cav33", 1, 0, 1.0, 120.0, -30.0, 1e-8)
 
-
     def _create_sectionlists(self):
         self.allsecnames = []
         self.allseclist  = h.SectionList()
@@ -258,8 +254,6 @@ class MSN:
                     val = calculate_distribution(d3, dist, a4, a5, a6, a7, g8)
                     cmd = 'seg.%s = %g' % (as2, val)
                     exec(cmd)
-
-
 
 class Spine():
     """
