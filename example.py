@@ -11,7 +11,6 @@ from common_functions import *
 # Load model mechanisms
 import neuron               as nrn
 import numpy as np
-import random
 nrn.load_mechanisms('mechanisms/single')
 h.load_file('stdlib.hoc')
 h.load_file('import3d.hoc')
@@ -61,11 +60,8 @@ for cell_index in model_iterator:
 
     # current needed to make the cell spike (if given to the soma)
     rheobase        =   model_sets[cell_index]['rheobase']
-    # Istim           =   h.IClamp(0.5, sec=cell.soma)
-    # Istim.delay     =   100
-    # Istim.dur       =   1000
-    # Istim.amp       =   (rheobase) *1e-3
-    # # record vectors
+
+    # record vectors
     tm  = h.Vector()
     tm.record(h._ref_t)
 
@@ -73,45 +69,22 @@ for cell_index in model_iterator:
     vm = h.Vector()
     vm.record(cell.soma(0.5)._ref_v)
 
-    # to get count of dendrites
-    count_dend = 0
-    for x in cell.dendlist:
-        count_dend += 1
-
-    rand_dend_nums = random.sample(range(1, len(range(count_dend))), 20)
-
-    print (rand_dend_nums)
-
-    clist = []
-
-    count = 0
-
     for c in cell.dendlist: # TODO test other dendritic locations!
-        print (" count = " + str(count))
-
-        count +=1
-
-        if count not in rand_dend_nums:
-
-            continue
 
         parentDendrites = getParentDendrites(c, [])
         distFromSoma = sum([x[1] for x in parentDendrites])
         print(parentDendrites)
 
-        count +=1
-
         # randomly add stim on a distal dendrite
         if len(parentDendrites) > 3 and distFromSoma > 100:
 
             # create a single glut synapse (glutamate)
-            for loc in (np.arange(1,9,.2) )/10:
-                syn = h.glutamate( loc, sec=c)
-                # default ampa/nmda ratio = 1
-                # TODO test other ratios
-                syn.ratio = 1
-                # TODO vary the time constants
-                # tau1_ampa, tau2_ampa, tau1_nmda, tau2_nmda
+            syn = h.glutamate( 0.5, sec=c)
+            # default ampa/nmda ratio = 1
+            # TODO test other ratios
+            syn.ratio = 1
+            # TODO vary the time constants
+            # tau1_ampa, tau2_ampa, tau1_nmda, tau2_nmda
 
             # create NetStim object
             # TODO test larger and smaller gbase
@@ -139,10 +112,8 @@ for cell_index in model_iterator:
             nmda_current = h.Vector()
             nmda_current.record(syn._ref_i_nmda)
 
-            clist.append(c)
-            # break   # set in first only...
-            # if count > 4:
-            #     break
+            break   # set in first only...
+
     # run simulation
     h.finitialize(-85)
 
@@ -150,26 +121,21 @@ for cell_index in model_iterator:
     while h.t < 300:
         h.fadvance()
 
-    print (clist)
+    fig,ax = plt.subplots(2,1, figsize=(6,10), sharex='all')
+    ax[0].plot(tm.to_python(), vm.to_python(), label='soma')
+    ax[0].plot(tm.to_python(), vml.to_python(), label=c.name())
+    ax[1].plot(tm, ampa_current, label='ampa')
+    ax[1].plot(tm, nmda_current, label='nmda')
 
-    for c in clist:
-        plt.clf()
-        print (" plotting for c = " + c.name())
-        fig,ax = plt.subplots(2,1, figsize=(6,10), sharex='all')
-        ax[0].plot(tm.to_python(), vm.to_python(), label='soma')
-        ax[0].plot(tm.to_python(), vml.to_python(), label=c.name())
-        ax[1].plot(tm, ampa_current, label='ampa')
-        ax[1].plot(tm, nmda_current, label='nmda')
+    ax[0].set_title('Voltage in the soma and a stimulated dendrite')
+    ax[0].set_ylabel('Voltage (mV)')
+    ax[0].legend()
+    ax[1].set_title('synaptic current')
+    ax[1].set_ylabel('Current (nA)')
+    ax[1].set_xlabel('Time (ms)')
+    ax[1].legend()
 
-        ax[0].set_title('Voltage in the soma and a stimulated dendrite')
-        ax[0].set_ylabel('Voltage (mV)')
-        ax[0].legend()
-        ax[1].set_title('synaptic current')
-        ax[1].set_ylabel('Current (nA)')
-        ax[1].set_xlabel('Time (ms)')
-        ax[1].legend()
-
-        plt.savefig("output/final_out_" + c.name() + ".png")
+    plt.show()
 
     #plt.savefig("output/cell_"+ str(cell_index) + "_dendrite_" + str(c.name()) )
 
