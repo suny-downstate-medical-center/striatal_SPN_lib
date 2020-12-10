@@ -78,6 +78,7 @@ for cell_index in model_iterator:
         # randomly add stim on a distal dendrite
         if len(parentDendrites) > 3 and distFromSoma > 100:
 
+
             # create a single glut synapse (glutamate)
             syn = h.glutamate( 0.5, sec=c)
             # default ampa/nmda ratio = 1
@@ -85,14 +86,24 @@ for cell_index in model_iterator:
             syn.ratio = 1
             # TODO vary the time constants
             # tau1_ampa, tau2_ampa, tau1_nmda, tau2_nmda
+            #
+            # syn_locs = np.arange(1,9,.3)/10
+            # for syn_loc in syn_locs:
+            #     # create a single glut synapse (glutamate)
+            #     syn = h.glutamate( syn_loc, sec=c)
+            #     # default ampa/nmda ratio = 1
+            #     # TODO test other ratios
+            #     syn.ratio = 1
+            #     # TODO vary the time constants
+            #     # tau1_ampa, tau2_ampa, tau1_nmda, tau2_nmda
 
             # create NetStim object
             # TODO test larger and smaller gbase
-            gbase          = 3.0e-3        # 0.3e-3
+            gbase          = 4.0e-3        # 0.3e-3
             ns             = h.NetStim()
             ns.start       = 100
             # TODO test other intervals!
-            ns.interval    = 2  # mean interval between two spikes in ms
+            ns.interval    = 10  # mean interval between two spikes in ms
             ns.noise       = 0  # add noise to ISI? (0-1)
             # TODO change number of epsp
             ns.number      = 10 # numer of sequential psps

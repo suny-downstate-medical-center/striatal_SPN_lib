@@ -5,7 +5,6 @@ COMMENT
 //		2010			//
 //****************************//
 ENDCOMMENT
-
 TITLE NMDA synapse with depression
 
 NEURON {
