@@ -76,14 +76,19 @@ for cell_index in model_iterator:
         print(parentDendrites)
 
         # randomly add stim on a distal dendrite
-        if len(parentDendrites) > 3 and distFromSoma > 100:
+        if distFromSoma > 30 and distFromSoma < 50:
 
 
             # create a single glut synapse (glutamate)
-            syn = h.glutamate( 0.5, sec=c)
+            syn = h.glutamate( 0.3, sec=c)
             # default ampa/nmda ratio = 1
             # TODO test other ratios
             syn.ratio = 1
+            syn = h.glutamate( 0.6, sec=c)
+            # default ampa/nmda ratio = 1
+            # TODO test other ratios
+            syn.ratio = 1
+
             # TODO vary the time constants
             # tau1_ampa, tau2_ampa, tau1_nmda, tau2_nmda
             #
